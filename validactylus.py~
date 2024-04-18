@@ -8,14 +8,12 @@ import pandas as pd
 
 ## get centrally managed schemas here:
 schema_base_url = "https://raw.githubusercontent.com/eLTER-RI/validiraptor/main/inst/app/www/schemas/"
-spec = referencing.jsonschema.DRAFT202012 ## specification of JSON schema used
-
 
 ## currently (Apr. 2024) available topic schemas:
 ## ['data_mapping', 'data_observation', 'event', 'license', 'mapping', 'method', 'reference', 'sample', 'station']
 
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description="validates an instance against an eLTER reporting schema")
 parser.add_argument("url_instance", type = str, help = "URL (file or remote) to CSV instance to be validated")
 parser.add_argument("name_topic", type = str, help = "name of a topic-specific schema")
 parser.add_argument("name_shared", type = str, help = "name of a schema with definitions shared by topic schemas ['shared']")
@@ -35,10 +33,10 @@ def register_schemas(r_topic, r_shared):
     -- args: r_topic, r_shared: server responses from the remote schemas' host
     '''
 
-    jsons = get_schema_jsons(r_topic, r_shared)   
+    jsons = get_schema_jsons(r_topic, r_shared)
  
-    schema_topic_resource = referencing.Resource(contents = jsons["topic"], specification = spec)
-    schema_shared_resource = referencing.Resource(contents = jsons["shared"], specification = spec)
+    schema_topic_resource = referencing.Resource(contents = jsons["topic"], specification = referencing.jsonschema.DRAFT202012)
+    schema_shared_resource = referencing.Resource(contents = jsons["shared"], specification = referencing.jsonschema.DRAFT202012)
 
     return referencing.Registry().with_resources([
         ("https://example.com/data_mapping", schema_topic_resource),
