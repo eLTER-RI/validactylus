@@ -1,0 +1,25 @@
+[project]
+name = "validactylus"
+version = "1.0.0"
+authors = [
+  { name="Ivo Offenthaler", email="validiraptor-dev@proton.me" },
+]
+description = "a validation CLI"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: EUPL2.1",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/eLTER-RI/validactylus"
+Issues = "https://github.com/eLTER-RI/validactylus"
+
+
+# set path to ./src to import modules for unit tests:
+[tool.pytest.ini_options]
+pythonpath = [
+  "src"
+]
