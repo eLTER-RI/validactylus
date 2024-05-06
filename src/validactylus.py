@@ -1,32 +1,16 @@
-import logging
 import argparse
 import jsonschema
 import requests
+import csv
 import json
 import urllib.parse
 import referencing # for in-memory registration of schemas
-import pandas as pd
-
-logger = logging.getLogger(__name__)
-
-
-def get_instance_from_csv(csv_url):
-    '''reads CSV data from a URL, takes header from first and exemplary data
-    from second line, converts to JSON-able dictionnairy.
-    Example: {"SITE_CODE" : "foo-bar-baz", ...}
-    '''
-    try:
-        instance = (pd.read_csv(csv_url, sep = ";").head(1)
-                    .to_json(orient = "records"))
-        instance = json.loads(instance)[0] ## first entry of json array only
-    except:
-        instance = False
-    finally:
-        return instance
 
 
 
-def get_remote_schemas(schema_base_url, name_topic, name_shared):
+def get_remote_schemas(schema_base_url,
+                       name_topic,
+                       name_shared = "shared"):
     '''
     retrieve validation schemas (1. topic specific and 2. shared definitions)
     from host; raise error if not both schemas can be retrieved
@@ -40,10 +24,11 @@ def get_remote_schemas(schema_base_url, name_topic, name_shared):
                          "for schemas")
 
     max_waiting = 5 ## s
-    rs = {"schema_topic" : requests.get(f"{schema_base_url}/{name_topic}.json",
-                           timeout = max_waiting),
-          "schema_shared" : requests.get(f"{schema_base_url}/{name_shared}.json",
-                            timeout =max_waiting)
+    rs = {
+        "schema_topic" : requests.get(f"{schema_base_url}/{name_topic}.json",
+                                      timeout = max_waiting),
+        "schema_shared" : requests.get(f"{schema_base_url}/{name_shared}.json",
+                                       timeout =max_waiting)
     }
     
     if not all (v.status_code == 200 for k, v in rs.items()):
@@ -83,16 +68,19 @@ def register_schemas(schema_topic, schema_shared,
 
 if __name__ == "__main__":
 
-    ## get centrally managed schemas here:
+    # get centrally managed schemas here:
     schema_base_url = ("https://raw.githubusercontent.com/eLTER-RI/"
-                       "elter-ci-schemas/main/schemas/")
+                               "elter-ci-schemas/main/schemas/")
+
+    # currently (Apr. 2024) available topic schemas:
+    # ['data_mapping', 'data_observation', 'event', 'license', 'mapping', 
+    # 'method', 'reference', 'sample', 'station']
+        
+    
+
     ## use JSONSchema version DRAFT202012:
     spec = referencing.jsonschema.DRAFT202012
 
-
-    ## currently (Apr. 2024) available topic schemas:
-    ## ['data_mapping', 'data_observation', 'event', 'license', 'mapping', 
-    ## 'method', 'reference', 'sample', 'station']
 
 
     parser = argparse.ArgumentParser()
@@ -113,23 +101,34 @@ if __name__ == "__main__":
     args = {k: urllib.parse.quote(v, safe = ":./_-") for k,v in args.items()}
    
 
-    instance = get_instance_from_csv(args['url_instance'])
+    the_schemas = get_remote_schemas(schema_base_url,
+                                     args["name_topic"],
+                                     args["name_shared"])
 
 
-    registry = register_schemas(r_topic, r_shared)
     ## create a validator which uses a schema defined in the registry;
     ## this validator then accepts an instance to validate
     v = jsonschema.Draft202012Validator(
-        schema = get_schema_jsons(r_topic, r_shared)["topic"],
-        registry = registry
+        schema = the_schemas["schema_topic"],
+        registry = register_schemas(the_schemas["schema_topic"],
+                                    the_schemas["schema_shared"])
     )
 
 
-    print(json.dumps([{"path" : ','.join(e.path), "message" : e.message}
-                      for e in v.iter_errors(instance = instance)
-                      ])
-          )
-
+    v_results = []
+    with open(args["url_instance"]) as csv_data:
+        reader = csv.DictReader(csv_data, delimiter = ";")
+        i = 1
+        for row in reader:
+            instance = json.dumps(row)
+            v_results.extend([{"line" : i,
+                               "path" : ','.join(e.path),
+                               "message" : e.message}
+                      for e in v.iter_errors(instance = json.loads(instance))
+                    ])
+            i += 1
+            
+    print (json.dumps(v_results))
 
 
 
