@@ -1,19 +1,11 @@
 
-<img src='man/figures/eLTER-IMAGE-validiraptor.svg' width = '150px' style = 'display:block; margin-top:5em; clear:both !important' />
-
-<br/>
-
-# Validiraptor
-
-![](https://img.shields.io/badge/license-EUPL--1.2-blue)
-![](https://img.shields.io/badge/R-v4.3.3-blue)
+# Validactylus
 
 ## Description
 
-**Validiraptor is an R package which provides a browser based UI to
-validate data for conformance with a schema.** Instances are provided by
-the user as flat CSV tables, schemas are retrieved from remote in JSON
-schema notation.
+**Validactylus is a Python command line tool to validate structure and format
+of CSV data. The validation rules are specified in JSON Schema and
+retrieved from a central repository.
 
 ## Table of Contents
 
@@ -32,58 +24,26 @@ schema notation.
 
 ### Installation from GitHub
 
-This **R** package ist available from GitHub only. Use
-{[remotes](https://cran.r-project.org/web/packages/remotes/index.html)}
-or {[pacman](https://cran.r-project.org/web/packages/pacman/index.html)}
-to install from the GitHub source:
+```
+pip install git+https://github.com/eLTER-RI/validactylus.git
+```
 
-      ## install {remotes} if necessary:
-      if(!require("remotes")) install.packages("remotes")
-      ## fetch and install {validiraptor}:
-      remotes::install_github("eLTER-RI/validiraptor")
-
-> On Windows, you need to download and install
-> [Rtools](https://cran.r-project.org/bin/windows/Rtools/rtools43/rtools.html)
-> to compile the source files retrieved from GitHub. Make sure to
-> install the Rtools compatible with your R version (e. g. `RTools4.3`
-> for R version 4.3).
-
-After installation of the package, execute `validiraptor::run_app()` to
-launch the web app.
 
 ### Getting help
 
 #### For users
 
-In the running app (hosted or launched locally with
-`validiraptor::run_app()`), switch to the “demo” tab in the left sidebar
-for a choice of sample data to validate.
 
 #### For users and developers
 
-Visit <https://elter-ri.github.io/validiraptor/> or execute
-`validiraptor::run_site()` to browse the documentation
 
 #### For developers
 
-Consult inline comments for internal functions which are not exported
-for use with `help()`
 
 ## Contributing
 
 ### Dependencies
 
-- Dependencies on other R packages are declared in `DESCRIPTION` and
-  resolved upon installation.
-- Javascript dependencies are declared and included in `inst/app/www/js`
-
-*To modify the javascript part of the validation functionality, change
-the source `validate.src.js` first, then
-[`browserify`](https://www.npmjs.com/package/browserify) the source to
-get the bundled `validate.js`*
-
-- R code is tested with {[testthat](https://testthat.r-lib.org/)}. The
-  test scripts go into `tests/testthat/`.
 
 ### Coding standards
 
@@ -93,20 +53,9 @@ guidelines when writing code for this project:
 
 #### Style
 
-- Our R code adheres to the [tidyverse style
-  guide](https://style.tidyverse.org/). Key points include:
-  - Name variables and functions in `snake_case` (except `camelCase` for
-    IDs of Shiny UI elements)
-  - Place spaces around all binary operators (=, +, -, \<-, etc.),
-    except in function arguments.
-  - Always assign `<-`, not `=`
 
 #### Paradigm
 
-- Please stick to R’s [functional
-  approach](https://adv-r.hadley.nz/fp.html) and make liberal use of the
-  native pipe operator `|>` to prevent scope mess and increase
-  readability.
 
 <!-- general advice for contributors, include in README ?
 &#10;### Tools for enforcing style
