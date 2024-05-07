@@ -1,40 +1,37 @@
 import argparse
 import jsonschema
 import requests
+import re
 import csv
 import json
-import urllib.parse
+from urllib.parse import urljoin, quote
 import referencing # for in-memory registration of schemas
 
 
 
-def get_remote_schemas(schema_base_url,
-                       name_topic,
-                       name_shared = "shared"):
+def get_remote_schemas(url_schema_topic,
+                       url_schema_shared):
     '''
     retrieve validation schemas (1. topic specific and 2. shared definitions)
     from host; raise error if not both schemas can be retrieved
     (i. e. if server status not 200 for either schema)
     '''
 
-    try:
-        requests.get(schema_base_url)
-    except (requests.exceptions.RequestException):
-        raise ValueError(f"failed to contact host \"{schema_base_url}\" " +\
-                         "for schemas")
 
     max_waiting = 5 ## s
     rs = {
-        "schema_topic" : requests.get(f"{schema_base_url}/{name_topic}.json",
+        "schema_topic" : requests.get(url_schema_topic,
                                       timeout = max_waiting),
-        "schema_shared" : requests.get(f"{schema_base_url}/{name_shared}.json",
+        "schema_shared" : requests.get(url_schema_shared,
                                        timeout =max_waiting)
     }
     
     if not all (v.status_code == 200 for k, v in rs.items()):
-        raise ValueError(f"\"{name_topic}.json\" and/or " + \
-                          f"\"{name_shared}.json\"" + \
-                          f" not found at \"{schema_base_url}\"")
+        raise ValueError("failed to retrieve" +\
+                         f"\"{url_schema_topic}\" and/or " + \
+                         f"\"{url_schema_shared}.json\""
+                         )
+            
             
     # decode server byte response to UTF-8 and return schema as JSON:        
     rs = {k: json.loads(v.content.decode("UTF-8")) for k, v in rs.items()}
@@ -73,8 +70,8 @@ if __name__ == "__main__":
                                "elter-ci-schemas/main/schemas/")
 
     # currently (Apr. 2024) available topic schemas:
-    # ['data_mapping', 'data_observation', 'event', 'license', 'mapping', 
-    # 'method', 'reference', 'sample', 'station']
+    topic_choices = ['data_mapping', 'data_observation', 'event', 'license', 
+                     'mapping', 'method', 'reference', 'sample', 'station']
         
     
 
@@ -83,31 +80,53 @@ if __name__ == "__main__":
 
 
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("url_instance", type = str,
-                        help = ("URL (file or remote) to CSV instance"
-                                "to be validated")
+    parser = argparse.ArgumentParser(prog = "elter_validate",
+                                     description = "validate a CSV " +\
+                        "using JSON schema",
+                        epilog = "HTH")
+    parser.add_argument("file_path", type = str, # positional (first) argument
+                        help = ("path to CSV-file which to validate")
                         )
-    parser.add_argument("name_topic", type = str,
+    
+    parser.add_argument("-u", "--schema-base",  type = str,
+                        default = schema_base_url,
+                        help = "base url for remote schemas," + \
+                            f" default: {schema_base_url}"
+                        )
+    
+    parser.add_argument("-t", "--schema-topic", type = str,
+                        choices = topic_choices,
                         help = "name of a topic-specific schema")
-    parser.add_argument("name_shared", type = str,
+    
+    parser.add_argument("-s", "--schema-shared", type = str,
+                        default = "shared",
                         help = ("name of a schema with definitions shared by"
-                                " topic schemas ['shared']"))
+                                " topic schemas, default: \"shared\""))
 
     args = vars(parser.parse_args()) ## vars converts result to dictionnary
 
-    ## sanitize path arguments
-    ## (only the name, e. g. "data_mapping" should be supplied, but anyway:
-    args = {k: urllib.parse.quote(v, safe = ":./_-") for k,v in args.items()}
+    # sanitize path arguments
+    # (only the name, e. g. "data_mapping" should be supplied, but anyway:
+    args = {k: quote(v, safe = ":./_-") for k,v in args.items()}
+   
+    # expand schema name to full URL, whether supplied as foo, foo.json
+    # or https://www.my_schemahost.org/schemas/foo.json:       
+    def expand_path(fragment):
+        return(urljoin(schema_base_url,
+                  re.sub("(\\.json)+$", "", fragment) + ".json"))
+    args = {k: expand_path(v) if bool(re.search("schema_", k)) else v
+           for k, v in args.items()} 
+
+
+    print(args)
+
+    the_schemas = get_remote_schemas(args["schema_topic"],
+                                     args["schema_shared"])
+    
    
 
-    the_schemas = get_remote_schemas(schema_base_url,
-                                     args["name_topic"],
-                                     args["name_shared"])
-
-
-    ## create a validator which uses a schema defined in the registry;
-    ## this validator then accepts an instance to validate
+    # create a validator which uses a schema defined in the registry;
+    # this validator then accepts an instance to validate
     v = jsonschema.Draft202012Validator(
         schema = the_schemas["schema_topic"],
         registry = register_schemas(the_schemas["schema_topic"],
@@ -116,7 +135,7 @@ if __name__ == "__main__":
 
 
     v_results = []
-    with open(args["url_instance"]) as csv_data:
+    with open(args["file_path"]) as csv_data:
         reader = csv.DictReader(csv_data, delimiter = ";")
         i = 1
         for row in reader:
@@ -129,6 +148,8 @@ if __name__ == "__main__":
             i += 1
             
     print (json.dumps(v_results))
+    
+    
 
 
 
