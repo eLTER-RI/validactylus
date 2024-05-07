@@ -64,6 +64,7 @@ def register_schemas(schema_topic, schema_shared,
 
 
 if __name__ == "__main__":
+    
 
     # get centrally managed schemas here:
     schema_base_url = ("https://raw.githubusercontent.com/eLTER-RI/"
