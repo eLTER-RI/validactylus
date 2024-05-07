@@ -3,7 +3,7 @@
 
 ## Description
 
-**Validactylus is a Python command line tool to validate structure and format
+**Validactylus** is a Python command line tool to validate structure and format
 of CSV data. The validation rules are specified in JSON Schema and
 retrieved from a central repository.
 
