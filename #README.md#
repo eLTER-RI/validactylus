@@ -38,7 +38,6 @@ pip install git+https://github.com/eLTER-RI/validactylus.git
 > elter_validate -h
 ```
 
-
 #### For developers
 
 

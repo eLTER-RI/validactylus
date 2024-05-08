@@ -103,12 +103,17 @@ if __name__ == "__main__":
                         default = "shared",
                         help = ("name of a schema with definitions shared by"
                                 " topic schemas, default: \"shared\""))
+    
+    parser.add_argument("-delim", type = str, default = ";",
+                        help = ("column separator, default: \";\" (semicolon"))
 
-    args = vars(parser.parse_args()) ## vars converts result to dictionnary
+    # command line arguments to dictionary "args":
+    args = vars(parser.parse_args()) 
 
     # sanitize path arguments
     # (only the name, e. g. "data_mapping" should be supplied, but anyway:
-    args = {k: quote(v, safe = ":./_-") for k,v in args.items()}
+    args = {k: quote(v, safe = ":./_-") if bool(re.search("schema_", k)) else v 
+            for k, v in args.items()}
    
     # expand schema name to full URL, whether supplied as foo, foo.json
     # or https://www.my_schemahost.org/schemas/foo.json:       
@@ -137,7 +142,7 @@ if __name__ == "__main__":
 
     v_results = []
     with open(args["file_path"]) as csv_data:
-        reader = csv.DictReader(csv_data, delimiter = ";")
+        reader = csv.DictReader(csv_data, delimiter = args["delim"])
         i = 1
         for row in reader:
             instance = json.dumps(row)

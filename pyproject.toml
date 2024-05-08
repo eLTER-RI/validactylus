@@ -12,6 +12,10 @@ classifiers = [
     "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)"
     "Operating System :: OS Independent",
 ]
+dependencies = [
+    "mkdocstrings[python]>=0.18",
+]
+
 
 [project.urls]
 Homepage = "https://github.com/eLTER-RI/validactylus"
