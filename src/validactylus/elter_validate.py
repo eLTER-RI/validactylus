@@ -110,8 +110,7 @@ if __name__ == "__main__":
     # command line arguments to dictionary "args":
     args = vars(parser.parse_args()) 
 
-    # sanitize path arguments
-    # (only the name, e. g. "data_mapping" should be supplied, but anyway:
+    # sanitize url paths to schemas
     args = {k: quote(v, safe = ":./_-") if bool(re.search("schema_", k)) else v 
             for k, v in args.items()}
    

@@ -31,31 +31,27 @@ pip install git+https://github.com/eLTER-RI/validactylus.git
 
 ### Getting help
 
-#### For users
-
 ```
 > elter_validate --help
 > elter_validate -h
 ```
 
-#### For developers
-
-
 ## Contributing
 
 ### Dependencies
 
-
-### Coding standards
+## Coding style
 
 To maintain the quality and readability of our code, we follow certain
 coding standards. Contributors are expected to adhere to these
 guidelines when writing code for this project:
 
-#### Style
+### Python
 
-
-#### Paradigm
+-   We follow the [PEP 8 style guide](https://www.python.org/dev/peps/pep-0008/) for Python code.
+    This includes guidelines on code layout, naming conventions, and
+    best practices.
+-   Use 4 spaces per indentation level.
 
 
 <!-- general advice for contributors, include in README ?

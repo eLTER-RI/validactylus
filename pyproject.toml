@@ -9,17 +9,17 @@ readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)"
-    "Operating System :: OS Independent",
+    "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)",
+    "Operating System :: OS Independent"
 ]
 dependencies = [
     "mkdocstrings[python]>=0.18",
 ]
-
-
 [project.urls]
 Homepage = "https://github.com/eLTER-RI/validactylus"
 Issues = "https://github.com/eLTER-RI/validactylus"
+
+
 
 
 # set path to ./src to import modules for unit tests:
@@ -28,6 +28,8 @@ pythonpath = [
   "src"
 ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/validactylus"]
 
 [build-system]
 requires = ["hatchling"]
