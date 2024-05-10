@@ -147,10 +147,10 @@ Development & maintenance funded through:
 
 <p align="center">
 <a href="https://elter-ri.eu/elter-ppp">
-<img src="man/figures/eLTER-IMAGE-PPP_logo-v01.svg" alt="eLTER PLUS Logo" width="175" height="auto"/>
+<img src="assets/eLTER-IMAGE-PPP_logo-v01.svg" alt="eLTER PLUS Logo" width="175" height="auto"/>
 </a> <a href="https://elter-ri.eu/elter-plus">
-<img src="man/figures/eLTER-IMAGE-PLUS_logo-v01.svg" width="175" height="auto"/>
+<img src="assets/eLTER-IMAGE-PLUS_logo-v01.svg" width="175" height="auto"/>
 </a> <a href="https://elter-ri.eu/elter-enrich">
-<img src="man/figures/eLTER-IMAGE-EnRich_logo-v01.svg" alt="eLTER EnRich Logo" width="175" height="auto"/>
+<img src="assets/eLTER-IMAGE-EnRich_logo-v01.svg" alt="eLTER EnRich Logo" width="175" height="auto"/>
 </a>
 </p>
