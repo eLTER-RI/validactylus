@@ -34,17 +34,26 @@ run from command line
 
 Windows:
 ```
-> python -m validate_elter
+> py -m validate_elter
 ```
 
 Linux:
 ```
-python path/to/validate_elter.py
+$ python path/to/validate_elter.py
 ```
 
 
 #### Examples
+`> py -m validate_elter testdata.csv -r data_mapping`
 
+
+*trying to validate with a schema that won't be found in eLTER's central
+shema store*:
+```
+> py -m validate_elter testdata.csv -r inexistent_schema
+
+```
+> `elter_validate: error: argument -r/--rules: invalid choice: 'this_schema_doesnt_exist' (choose from 'data_mapping', 'data_observation', 'event', 'license', 'mapping', 'method', 'reference', 'sample', 'station')`
 
 
 ### Getting help
