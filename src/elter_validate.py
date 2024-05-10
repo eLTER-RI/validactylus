@@ -12,9 +12,18 @@ import referencing # for in-memory registration of schemas
 def get_remote_schemas(url_schema_topic,
                        url_schema_shared):
     '''
-    retrieve validation schemas (1. topic specific and 2. shared definitions)
-    from host; raise error if not both schemas can be retrieved
-    (i. e. if server status not 200 for either schema)
+    Retrieve validation schemas from a remote schema store (e. g. a dedicated
+    GitHub repo).
+    Will raise an error if not both schemas can be retrieved
+    with a server status of 200.
+    
+    **Arguments:**
+    
+    `url_schema_topic` -- full URL of topic-specific schema
+        (e. g. site description),
+        
+    `url_schema_shared`  -- full URL of shared schema (containing common 
+                definitions shared by several topic-specific schemas)    
     '''
 
 
@@ -23,17 +32,17 @@ def get_remote_schemas(url_schema_topic,
         "schema_topic" : requests.get(url_schema_topic,
                                       timeout = max_waiting),
         "schema_shared" : requests.get(url_schema_shared,
-                                       timeout =max_waiting)
+                                        timeout =max_waiting)
     }
     
     if not all (v.status_code == 200 for k, v in rs.items()):
         raise ValueError("failed to retrieve" +\
-                         f"\"{url_schema_topic}\" and/or " + \
-                         f"\"{url_schema_shared}.json\""
-                         )
+                          f"\"{url_schema_topic}\" and/or " + \
+                          f"\"{url_schema_shared}.json\""
+                          )
             
             
-    # decode server byte response to UTF-8 and return schema as JSON:        
+#     # decode server byte response to UTF-8 and return schema as JSON:        
     rs = {k: json.loads(v.content.decode("UTF-8")) for k, v in rs.items()}
         
     return rs
@@ -41,11 +50,18 @@ def get_remote_schemas(url_schema_topic,
 
 def register_schemas(schema_topic, schema_shared,
                      spec = referencing.jsonschema.DRAFT202012):
-    '''registers schemas locally
-    Using a Registry object to make both the schema_shared and schema_topic
-    known locally. This allows, i. a. to share references between schemas.
-    -- args: schema_topic, schema_shared:
-        JSON schemas (by default fetched from a remote host)
+    '''
+    Registers schemas (JSON objects of schemas written in JSONSchema)                       
+                       locally in a Registry object.
+    
+    This is necessary to allow references from one schema to another,
+    e. g. a topic-specific schema for site description referring to 
+    common definitions (like latitude or site code format) stored in a
+    shared schema.
+    
+    **Arguments**:
+    `schema_topic` -- JSON object of topic specific schema,
+    `schema_shared` -- JSON object of schema with shared definitions
     '''
 
     schema_topic_resource = (

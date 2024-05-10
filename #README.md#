@@ -27,6 +27,8 @@ retrieved from a central repository.
 ```
 pip install git+https://github.com/eLTER-RI/validactylus.git
 ```
+or fetch tarball from
+```
 
 
 ### Getting help
