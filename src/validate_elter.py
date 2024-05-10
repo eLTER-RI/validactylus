@@ -8,23 +8,32 @@ from urllib.parse import urljoin, quote
 import referencing # for in-memory registration of schemas
 
 
+"""
+blubb
+
+"""
+
+
+
 
 def get_remote_schemas(url_schema_topic,
                        url_schema_shared):
-    '''
+    """
     Retrieve validation schemas from a remote schema store (e. g. a dedicated
     GitHub repo).
     Will raise an error if not both schemas can be retrieved
     with a server status of 200.
     
-    **Arguments:**
+    Parameters
+    ----------
     
-    `url_schema_topic` -- full URL of topic-specific schema
-        (e. g. site description),
+    url_schema_topic : str
+        full URL of topic-specific schema (e. g. site description)
         
-    `url_schema_shared`  -- full URL of shared schema (containing common 
+    url_schema_shared : str
+        full URL of shared schema (containing common 
                 definitions shared by several topic-specific schemas)    
-    '''
+    """
 
 
     max_waiting = 5 ## s
@@ -50,7 +59,7 @@ def get_remote_schemas(url_schema_topic,
 
 def register_schemas(schema_topic, schema_shared,
                      spec = referencing.jsonschema.DRAFT202012):
-    '''
+    """
     Registers schemas (JSON objects of schemas written in JSONSchema)                       
                        locally in a Registry object.
     
@@ -59,10 +68,13 @@ def register_schemas(schema_topic, schema_shared,
     common definitions (like latitude or site code format) stored in a
     shared schema.
     
-    **Arguments**:
-    `schema_topic` -- JSON object of topic specific schema,
-    `schema_shared` -- JSON object of schema with shared definitions
-    '''
+    Parameters:
+    -----------
+    schema_topic : Dict
+        topic-specific schema, `loads`'ed from remote JSON ressource
+    schema_shared : Dict
+        schema with shared definitions, `loads`'ed from remote JSON ressource
+    """
 
     schema_topic_resource = (
         referencing.Resource(contents = schema_topic,
@@ -80,15 +92,49 @@ def register_schemas(schema_topic, schema_shared,
 
 
 def get_validator(schema_topic, registry):
-    # create a validator which uses a schema defined in the registry;
-    # this validator then accepts an instance to validate
+    
+    """
+    Parameters
+    ----------
+    schema_topic : Dict
+        topic-specific schema, `loads`'ed from JSON string
+    registry : referencing.Registry
+        a validator (package JSONschema) to ingest the CSV data
+    
+    Returns
+    -------
+    validator : jsonschema.Validator
+        a validator which uses the schema "schema_topic" including references
+        to a common schema "schema_shared" stored in the schema
+        registry. This validator can be used to validate an instance (=data
+        to be checked) like so: `validate_file(file_path, validator)`.  
+               
+    """
     validator = jsonschema.Draft202012Validator(
         schema = schemas["schema_topic"],
         registry = registry)
     return (validator)
     
 
-def validate_elter(file_path, validator):  
+def validate_file(file_path, validator):
+    """
+    
+    
+    Parameters
+    ----------
+    file_path : str
+        full path to CSV file to be validated
+    validator : jsonschema.validator
+        a validator (package JSONschema) to ingest the CSV data
+
+    Returns
+    -------
+    v_results : str
+        A string describing a JSON array of error objects encountered during
+        validation, each object consisting of CSV line number,
+        invalid parameter and schema violation.
+
+    """
     v_results = []
     with open(file_path) as csv_data:
         reader = csv.DictReader(csv_data, delimiter = args["delim"])
@@ -135,11 +181,11 @@ if __name__ == "__main__":
                             f" default: {schema_base_url}"
                         )
     
-    parser.add_argument("-t", "--schema-topic", type = str,
+    parser.add_argument("-r", "--rules", type = str,
                         choices = topic_choices,
                         help = "name of a topic-specific schema")
     
-    parser.add_argument("-s", "--schema-shared", type = str,
+    parser.add_argument("-rs", "--shared-rules", type = str,
                         default = "shared",
                         help = ("name of a schema with definitions shared by"
                                 " topic schemas, default: \"shared\""))
@@ -151,7 +197,7 @@ if __name__ == "__main__":
     args = vars(parser.parse_args()) 
 
     # sanitize url paths to schemas
-    args = {k: quote(v, safe = ":./_-") if bool(re.search("schema_", k)) else v 
+    args = {k: quote(v, safe = ":./_-") if bool(re.search("rules", k)) else v 
             for k, v in args.items()}
    
     # expand schema name to full URL, whether supplied as foo, foo.json
@@ -159,19 +205,19 @@ if __name__ == "__main__":
     def expand_path(fragment):
         return(urljoin(schema_base_url,
                   re.sub("(\\.json)+$", "", fragment) + ".json"))
-    args = {k: expand_path(v) if bool(re.search("schema_", k)) else v
+    args = {k: expand_path(v) if bool(re.search("rules", k)) else v
            for k, v in args.items()}  
     
     
 
 
-    schemas = get_remote_schemas(args["schema_topic"], args["schema_shared"])
+    schemas = get_remote_schemas(args["rules"], args["shared_rules"])
     registry = register_schemas(schemas["schema_topic"],
                                        schemas["schema_shared"],
                                        spec)
 
     validator = get_validator(schemas["schema_topic"], registry)
-    result = validate_elter(args["file_path"], validator)
+    result = validate_file(args["file_path"], validator)
     print(result)
     
 

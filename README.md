@@ -28,19 +28,32 @@ retrieved from a central repository.
 pip install git+https://github.com/eLTER-RI/validactylus.git
 ```
 
+### Usage
+
+run from command line
+
+Windows:
+```
+> python -m validate_elter
+```
+
+Linux:
+```
+python path/to/validate_elter.py
+```
+
+
+#### Examples
+
+
 
 ### Getting help
 
 #### For users
-
-```
-> elter_validate --help
-> elter_validate -h
-```
-
+run `validate_elter.py` with the `-h` flag
 
 #### For developers
-
+see `/docs` or visit [GitHub page](https://elter-ri.github.io/validactylus/)
 
 ## Contributing
 

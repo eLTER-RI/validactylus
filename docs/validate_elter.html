@@ -36,23 +36,32 @@ from urllib.parse import urljoin, quote
 import referencing # for in-memory registration of schemas
 
 
+&#34;&#34;&#34;
+blubb
+
+&#34;&#34;&#34;
+
+
+
 
 def get_remote_schemas(url_schema_topic,
                        url_schema_shared):
-    &#39;&#39;&#39;
+    &#34;&#34;&#34;
     Retrieve validation schemas from a remote schema store (e. g. a dedicated
     GitHub repo).
     Will raise an error if not both schemas can be retrieved
     with a server status of 200.
     
-    **Arguments:**
+    Parameters
+    ----------
     
-    `url_schema_topic` -- full URL of topic-specific schema
-        (e. g. site description),
+    url_schema_topic : str
+        full URL of topic-specific schema (e. g. site description)
         
-    `url_schema_shared`  -- full URL of shared schema (containing common 
+    url_schema_shared : str
+        full URL of shared schema (containing common 
                 definitions shared by several topic-specific schemas)    
-    &#39;&#39;&#39;
+    &#34;&#34;&#34;
 
 
     max_waiting = 5 ## s
@@ -78,7 +87,7 @@ def get_remote_schemas(url_schema_topic,
 
 def register_schemas(schema_topic, schema_shared,
                      spec = referencing.jsonschema.DRAFT202012):
-    &#39;&#39;&#39;
+    &#34;&#34;&#34;
     Registers schemas (JSON objects of schemas written in JSONSchema)                       
                        locally in a Registry object.
     
@@ -87,10 +96,13 @@ def register_schemas(schema_topic, schema_shared,
     common definitions (like latitude or site code format) stored in a
     shared schema.
     
-    **Arguments**:
-    `schema_topic` -- JSON object of topic specific schema,
-    `schema_shared` -- JSON object of schema with shared definitions
-    &#39;&#39;&#39;
+    Parameters:
+    -----------
+    schema_topic : Dict
+        topic-specific schema, `loads`&#39;ed from remote JSON ressource
+    schema_shared : Dict
+        schema with shared definitions, `loads`&#39;ed from remote JSON ressource
+    &#34;&#34;&#34;
 
     schema_topic_resource = (
         referencing.Resource(contents = schema_topic,
@@ -108,15 +120,49 @@ def register_schemas(schema_topic, schema_shared,
 
 
 def get_validator(schema_topic, registry):
-    # create a validator which uses a schema defined in the registry;
-    # this validator then accepts an instance to validate
+    
+    &#34;&#34;&#34;
+    Parameters
+    ----------
+    schema_topic : Dict
+        topic-specific schema, `loads`&#39;ed from JSON string
+    registry : referencing.Registry
+        a validator (package JSONschema) to ingest the CSV data
+    
+    Returns
+    -------
+    validator : jsonschema.Validator
+        a validator which uses the schema &#34;schema_topic&#34; including references
+        to a common schema &#34;schema_shared&#34; stored in the schema
+        registry. This validator can be used to validate an instance (=data
+        to be checked) like so: `validate_file(file_path, validator)`.  
+               
+    &#34;&#34;&#34;
     validator = jsonschema.Draft202012Validator(
         schema = schemas[&#34;schema_topic&#34;],
         registry = registry)
     return (validator)
     
 
-def validate_elter(file_path, validator):  
+def validate_file(file_path, validator):
+    &#34;&#34;&#34;
+    
+    
+    Parameters
+    ----------
+    file_path : str
+        full path to CSV file to be validated
+    validator : jsonschema.validator
+        a validator (package JSONschema) to ingest the CSV data
+
+    Returns
+    -------
+    v_results : str
+        A string describing a JSON array of error objects encountered during
+        validation, each object consisting of CSV line number,
+        invalid parameter and schema violation.
+
+    &#34;&#34;&#34;
     v_results = []
     with open(file_path) as csv_data:
         reader = csv.DictReader(csv_data, delimiter = args[&#34;delim&#34;])
@@ -163,11 +209,11 @@ if __name__ == &#34;__main__&#34;:
                             f&#34; default: {schema_base_url}&#34;
                         )
     
-    parser.add_argument(&#34;-t&#34;, &#34;--schema-topic&#34;, type = str,
+    parser.add_argument(&#34;-r&#34;, &#34;--rules&#34;, type = str,
                         choices = topic_choices,
                         help = &#34;name of a topic-specific schema&#34;)
     
-    parser.add_argument(&#34;-s&#34;, &#34;--schema-shared&#34;, type = str,
+    parser.add_argument(&#34;-rs&#34;, &#34;--shared-rules&#34;, type = str,
                         default = &#34;shared&#34;,
                         help = (&#34;name of a schema with definitions shared by&#34;
                                 &#34; topic schemas, default: \&#34;shared\&#34;&#34;))
@@ -179,7 +225,7 @@ if __name__ == &#34;__main__&#34;:
     args = vars(parser.parse_args()) 
 
     # sanitize url paths to schemas
-    args = {k: quote(v, safe = &#34;:./_-&#34;) if bool(re.search(&#34;schema_&#34;, k)) else v 
+    args = {k: quote(v, safe = &#34;:./_-&#34;) if bool(re.search(&#34;rules&#34;, k)) else v 
             for k, v in args.items()}
    
     # expand schema name to full URL, whether supplied as foo, foo.json
@@ -187,19 +233,19 @@ if __name__ == &#34;__main__&#34;:
     def expand_path(fragment):
         return(urljoin(schema_base_url,
                   re.sub(&#34;(\\.json)+$&#34;, &#34;&#34;, fragment) + &#34;.json&#34;))
-    args = {k: expand_path(v) if bool(re.search(&#34;schema_&#34;, k)) else v
+    args = {k: expand_path(v) if bool(re.search(&#34;rules&#34;, k)) else v
            for k, v in args.items()}  
     
     
 
 
-    schemas = get_remote_schemas(args[&#34;schema_topic&#34;], args[&#34;schema_shared&#34;])
+    schemas = get_remote_schemas(args[&#34;rules&#34;], args[&#34;shared_rules&#34;])
     registry = register_schemas(schemas[&#34;schema_topic&#34;],
                                        schemas[&#34;schema_shared&#34;],
                                        spec)
 
     validator = get_validator(schemas[&#34;schema_topic&#34;], registry)
-    result = validate_elter(args[&#34;file_path&#34;], validator)
+    result = validate_file(args[&#34;file_path&#34;], validator)
     print(result)
     
 
@@ -225,32 +271,36 @@ if __name__ == &#34;__main__&#34;:
 GitHub repo).
 Will raise an error if not both schemas can be retrieved
 with a server status of 200.</p>
-<p><strong>Arguments:</strong></p>
-<p><code>url_schema_topic</code> &ndash; full URL of topic-specific schema
-(e. g. site description),</p>
-<p><code>url_schema_shared</code>
-&ndash; full URL of shared schema (containing common
-definitions shared by several topic-specific schemas)</p></div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>url_schema_topic</code></strong> :&ensp;<code>str</code></dt>
+<dd>full URL of topic-specific schema (e. g. site description)</dd>
+<dt><strong><code>url_schema_shared</code></strong> :&ensp;<code>str</code></dt>
+<dd>full URL of shared schema (containing common
+definitions shared by several topic-specific schemas)</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_remote_schemas(url_schema_topic,
                        url_schema_shared):
-    &#39;&#39;&#39;
+    &#34;&#34;&#34;
     Retrieve validation schemas from a remote schema store (e. g. a dedicated
     GitHub repo).
     Will raise an error if not both schemas can be retrieved
     with a server status of 200.
     
-    **Arguments:**
+    Parameters
+    ----------
     
-    `url_schema_topic` -- full URL of topic-specific schema
-        (e. g. site description),
+    url_schema_topic : str
+        full URL of topic-specific schema (e. g. site description)
         
-    `url_schema_shared`  -- full URL of shared schema (containing common 
+    url_schema_shared : str
+        full URL of shared schema (containing common 
                 definitions shared by several topic-specific schemas)    
-    &#39;&#39;&#39;
+    &#34;&#34;&#34;
 
 
     max_waiting = 5 ## s
@@ -278,14 +328,44 @@ definitions shared by several topic-specific schemas)</p></div>
 <span>def <span class="ident">get_validator</span></span>(<span>schema_topic, registry)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>schema_topic</code></strong> :&ensp;<code>Dict</code></dt>
+<dd>topic-specific schema, <code>loads</code>'ed from JSON string</dd>
+<dt><strong><code>registry</code></strong> :&ensp;<code>referencing.Registry</code></dt>
+<dd>a validator (package JSONschema) to ingest the CSV data</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>validator</code></strong> :&ensp;<code>jsonschema.Validator</code></dt>
+<dd>a validator which uses the schema "schema_topic" including references
+to a common schema "schema_shared" stored in the schema
+registry. This validator can be used to validate an instance (=data
+to be checked) like so: <code><a title="validate_elter.validate_file" href="#validate_elter.validate_file">validate_file()</a>(file_path, validator)</code>.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_validator(schema_topic, registry):
-    # create a validator which uses a schema defined in the registry;
-    # this validator then accepts an instance to validate
+    
+    &#34;&#34;&#34;
+    Parameters
+    ----------
+    schema_topic : Dict
+        topic-specific schema, `loads`&#39;ed from JSON string
+    registry : referencing.Registry
+        a validator (package JSONschema) to ingest the CSV data
+    
+    Returns
+    -------
+    validator : jsonschema.Validator
+        a validator which uses the schema &#34;schema_topic&#34; including references
+        to a common schema &#34;schema_shared&#34; stored in the schema
+        registry. This validator can be used to validate an instance (=data
+        to be checked) like so: `validate_file(file_path, validator)`.  
+               
+    &#34;&#34;&#34;
     validator = jsonschema.Draft202012Validator(
         schema = schemas[&#34;schema_topic&#34;],
         registry = registry)
@@ -303,16 +383,18 @@ locally in a Registry object.</p>
 e. g. a topic-specific schema for site description referring to
 common definitions (like latitude or site code format) stored in a
 shared schema.</p>
-<p><strong>Arguments</strong>:
-<code>schema_topic</code> &ndash; JSON object of topic specific schema,
-<code>schema_shared</code> &ndash; JSON object of schema with shared definitions</p></div>
+<h2 id="parameters">Parameters:</h2>
+<p>schema_topic : Dict
+topic-specific schema, <code>loads</code>'ed from remote JSON ressource
+schema_shared : Dict
+schema with shared definitions, <code>loads</code>'ed from remote JSON ressource</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def register_schemas(schema_topic, schema_shared,
                      spec = referencing.jsonschema.DRAFT202012):
-    &#39;&#39;&#39;
+    &#34;&#34;&#34;
     Registers schemas (JSON objects of schemas written in JSONSchema)                       
                        locally in a Registry object.
     
@@ -321,10 +403,13 @@ shared schema.</p>
     common definitions (like latitude or site code format) stored in a
     shared schema.
     
-    **Arguments**:
-    `schema_topic` -- JSON object of topic specific schema,
-    `schema_shared` -- JSON object of schema with shared definitions
-    &#39;&#39;&#39;
+    Parameters:
+    -----------
+    schema_topic : Dict
+        topic-specific schema, `loads`&#39;ed from remote JSON ressource
+    schema_shared : Dict
+        schema with shared definitions, `loads`&#39;ed from remote JSON ressource
+    &#34;&#34;&#34;
 
     schema_topic_resource = (
         referencing.Resource(contents = schema_topic,
@@ -341,16 +426,47 @@ shared schema.</p>
     ])</code></pre>
 </details>
 </dd>
-<dt id="validate_elter.validate_elter"><code class="name flex">
-<span>def <span class="ident">validate_elter</span></span>(<span>file_path, validator)</span>
+<dt id="validate_elter.validate_file"><code class="name flex">
+<span>def <span class="ident">validate_file</span></span>(<span>file_path, validator)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>file_path</code></strong> :&ensp;<code>str</code></dt>
+<dd>full path to CSV file to be validated</dd>
+<dt><strong><code>validator</code></strong> :&ensp;<code>jsonschema.validator</code></dt>
+<dd>a validator (package JSONschema) to ingest the CSV data</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>v_results</code></strong> :&ensp;<code>str</code></dt>
+<dd>A string describing a JSON array of error objects encountered during
+validation, each object consisting of CSV line number,
+invalid parameter and schema violation.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def validate_elter(file_path, validator):  
+<pre><code class="python">def validate_file(file_path, validator):
+    &#34;&#34;&#34;
+    
+    
+    Parameters
+    ----------
+    file_path : str
+        full path to CSV file to be validated
+    validator : jsonschema.validator
+        a validator (package JSONschema) to ingest the CSV data
+
+    Returns
+    -------
+    v_results : str
+        A string describing a JSON array of error objects encountered during
+        validation, each object consisting of CSV line number,
+        invalid parameter and schema violation.
+
+    &#34;&#34;&#34;
     v_results = []
     with open(file_path) as csv_data:
         reader = csv.DictReader(csv_data, delimiter = args[&#34;delim&#34;])
@@ -384,7 +500,7 @@ shared schema.</p>
 <li><code><a title="validate_elter.get_remote_schemas" href="#validate_elter.get_remote_schemas">get_remote_schemas</a></code></li>
 <li><code><a title="validate_elter.get_validator" href="#validate_elter.get_validator">get_validator</a></code></li>
 <li><code><a title="validate_elter.register_schemas" href="#validate_elter.register_schemas">register_schemas</a></code></li>
-<li><code><a title="validate_elter.validate_elter" href="#validate_elter.validate_elter">validate_elter</a></code></li>
+<li><code><a title="validate_elter.validate_file" href="#validate_elter.validate_file">validate_file</a></code></li>
 </ul>
 </li>
 </ul>
