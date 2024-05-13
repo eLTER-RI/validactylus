@@ -64,10 +64,9 @@ run `validate_elter.py` with the `-h` flag
 #### For developers
 see `/docs` or visit [GitHub page](https://elter-ri.github.io/validactylus/)
 
-## Contributing
 
-### Dependencies
-
+## Dependencies
+see `requirements.txt`
 
 ## Coding style
 
