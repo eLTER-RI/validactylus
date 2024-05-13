@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>validate_elter API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Intro …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,11 +22,90 @@
 <h1 class="title">Module <code>validate_elter</code></h1>
 </header>
 <section id="section-intro">
+<h1 id="intro">Intro</h1>
+<p><img src = "../assets/validactylus.svg" width = 200></p>
+<p>Validactylus is a small Python <strong>command line tool</strong> to validate CSV data
+against a ruleset laid down as a <a href="https://json-schema.org/">JSON schema</a>.</p>
+<p>Its main function, called from the command line is <code><a title="validate_elter" href="#validate_elter">validate_elter</a></code>.
+It takes a CSV data file, fetches a topic-specific and a shared schema from an
+eLTER schema store and validates the former, linewise, with the latter.</p>
+<p>Validation errors &ndash; if any &ndash; are returned as a JSON array of error objects.</p>
+<p><strong>Example</strong></p>
+<p>Windows</p>
+<pre><code>py -m validate_elter path/to/data.csv, -r station, -rs shared
+</code></pre>
+<p>Linux</p>
+<pre><code>python validate_elter.py path/to/data.csv -r station, -rs shared
+</code></pre>
+<p><em>(make sure to specify the full path to <code>validate_elter.py</code>)</em></p>
+<p><strong>Sample output</strong> (truncated)</p>
+<pre><code>[{&quot;line&quot;: 1, &quot;path&quot;: &quot;SITE_CODE&quot;, &quot;message&quot;: &quot;'qwer' does not match 
+    '^https://deims.org/[a-zA-Z0-9]{8}-([a-zA-Z0-9]{4}-){3}[a-zA-Z0-9]{12}$'&quot;},
+    {&quot;line&quot;: 1, &quot;path&quot;: &quot;LAT&quot;, &quot;message&quot;: &quot;'100' is not of type 'number'&quot;},
+</code></pre>
+<p>where <code>-r</code> is the topic-specific ruleset (here: for a station description)
+and <code>rs</code> the shared rules (common to several topics, e. g. longitude).
+The rulesets can be give as names ("station"), file names ("station.json") or
+full URL (currently:
+"https://raw.githubusercontent.com/eLTER-RI/elter-ci-schemas/main/schemas/station.json").</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import argparse
+<pre><code class="python">&#34;&#34;&#34;
+# Intro
+
+&lt;img src = &#34;../assets/validactylus.svg&#34; width = 200&gt;
+
+Validactylus is a small Python **command line tool** to validate CSV data
+against a ruleset laid down as a [JSON schema](https://json-schema.org/).
+
+Its main function, called from the command line is `validate_elter()`.
+It takes a CSV data file, fetches a topic-specific and a shared schema from an
+eLTER schema store and validates the former, linewise, with the latter.
+
+Validation errors -- if any -- are returned as a JSON array of error objects.
+
+**Example**
+
+
+Windows
+```
+py -m validate_elter path/to/data.csv, -r station, -rs shared
+```
+
+Linux
+```
+python validate_elter.py path/to/data.csv -r station, -rs shared
+```
+
+*(make sure to specify the full path to `validate_elter.py`)*
+
+**Sample output** (truncated)
+
+```
+[{&#34;line&#34;: 1, &#34;path&#34;: &#34;SITE_CODE&#34;, &#34;message&#34;: &#34;&#39;qwer&#39; does not match 
+    &#39;^https://deims.org/[a-zA-Z0-9]{8}-([a-zA-Z0-9]{4}-){3}[a-zA-Z0-9]{12}$&#39;&#34;},
+    {&#34;line&#34;: 1, &#34;path&#34;: &#34;LAT&#34;, &#34;message&#34;: &#34;&#39;100&#39; is not of type &#39;number&#39;&#34;},
+```    
+
+
+
+
+
+
+where `-r` is the topic-specific ruleset (here: for a station description)
+and `rs` the shared rules (common to several topics, e. g. longitude).
+The rulesets can be give as names (&#34;station&#34;), file names (&#34;station.json&#34;) or
+full URL (currently: 
+&#34;https://raw.githubusercontent.com/eLTER-RI/elter-ci-schemas/main/schemas/station.json&#34;).
+
+&#34;&#34;&#34;
+
+# render html docs with pdoc (from /src folder):
+# python -m pdoc validate_elter.py --html -o ../docs --force
+
+import argparse
 import jsonschema
 import requests
 import re
@@ -36,10 +115,6 @@ from urllib.parse import urljoin, quote
 import referencing # for in-memory registration of schemas
 
 
-&#34;&#34;&#34;
-blubb
-
-&#34;&#34;&#34;
 
 
 
@@ -492,7 +567,9 @@ invalid parameter and schema violation.</dd>
 <nav id="sidebar">
 <h1>Index</h1>
 <div class="toc">
-<ul></ul>
+<ul>
+<li><a href="#intro">Intro</a></li>
+</ul>
 </div>
 <ul id="index">
 <li><h3><a href="#header-functions">Functions</a></h3>

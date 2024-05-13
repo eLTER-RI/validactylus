@@ -3,6 +3,8 @@
 
 ## Description
 
+<img src = "assets/validactylus.svg">
+
 **Validactylus** is a Python command line tool to validate structure and format
 of CSV data. The validation rules are specified in JSON Schema and
 retrieved from a central repository.
@@ -67,17 +69,26 @@ see `/docs` or visit [GitHub page](https://elter-ri.github.io/validactylus/)
 ### Dependencies
 
 
-### Coding standards
+## Coding style
 
 To maintain the quality and readability of our code, we follow certain
 coding standards. Contributors are expected to adhere to these
 guidelines when writing code for this project:
 
-#### Style
+### Python
 
+-   We follow the [PEP 8 style
+    guide](https://www.python.org/dev/peps/pep-0008/) for Python code.
+    This includes guidelines on code layout, naming conventions, and
+    best practices.
+-   Use 4 spaces per indentation level.
 
-#### Paradigm
+### Tools for enforcing style
 
+-   For Python, consider using tools like
+    [`flake8`](https://github.com/PyCQA/flake8) or
+    [`black`](https://github.com/psf/black) to automatically check and
+    format code.
 
 <!-- general advice for contributors, include in README ?
 &#10;### Tools for enforcing style

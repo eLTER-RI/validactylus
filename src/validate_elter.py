@@ -1,3 +1,56 @@
+"""
+# Intro
+
+<img src = "../assets/validactylus.svg" width = 200>
+
+Validactylus is a small Python **command line tool** to validate CSV data
+against a ruleset laid down as a [JSON schema](https://json-schema.org/).
+
+Its main function, called from the command line is `validate_elter()`.
+It takes a CSV data file, fetches a topic-specific and a shared schema from an
+eLTER schema store and validates the former, linewise, with the latter.
+
+Validation errors -- if any -- are returned as a JSON array of error objects.
+
+**Example**
+
+
+Windows
+```
+py -m validate_elter path/to/data.csv, -r station, -rs shared
+```
+
+Linux
+```
+python validate_elter.py path/to/data.csv -r station, -rs shared
+```
+
+*(make sure to specify the full path to `validate_elter.py`)*
+
+**Sample output** (truncated)
+
+```
+[{"line": 1, "path": "SITE_CODE", "message": "'qwer' does not match 
+    '^https://deims.org/[a-zA-Z0-9]{8}-([a-zA-Z0-9]{4}-){3}[a-zA-Z0-9]{12}$'"},
+    {"line": 1, "path": "LAT", "message": "'100' is not of type 'number'"},
+```    
+
+
+
+
+
+
+where `-r` is the topic-specific ruleset (here: for a station description)
+and `rs` the shared rules (common to several topics, e. g. longitude).
+The rulesets can be give as names ("station"), file names ("station.json") or
+full URL (currently: 
+"https://raw.githubusercontent.com/eLTER-RI/elter-ci-schemas/main/schemas/station.json").
+
+"""
+
+# render html docs with pdoc (from /src folder):
+# python -m pdoc validate_elter.py --html -o ../docs --force
+
 import argparse
 import jsonschema
 import requests
@@ -8,10 +61,6 @@ from urllib.parse import urljoin, quote
 import referencing # for in-memory registration of schemas
 
 
-"""
-blubb
-
-"""
 
 
 
